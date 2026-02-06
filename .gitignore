@@ -1,0 +1,12 @@
+# Secrets
+.env
+token.txt
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Environnement Node (si vous utilisez JS)
+node_modules/
