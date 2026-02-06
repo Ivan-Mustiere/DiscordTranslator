@@ -1,0 +1,85 @@
+services:
+  ingest:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ingest
+    container_name: ingest_container
+    volumes:
+      - ./data/raw:/app/raw
+      - ./data/samples:/app/samples
+      - ./logs:/app/logs
+    env_file:
+      - .env
+      - .env.aws
+    environment:
+      - CONTAINER_NAME=INGEST
+
+  etl:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.etl
+    container_name: etl_container
+    volumes:
+      - ./data/raw:/app/raw
+      - ./data/processed:/app/processed
+      - ./data/samples:/app/samples
+      - ./logs:/app/logs
+
+    env_file:
+      - .env
+    environment:
+      - CONTAINER_NAME=ETL
+
+  training:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.training
+    container_name: training_container
+    volumes:
+      - ./data/processed:/app/processed
+      - ./models:/app/models
+      - ./logs:/app/logs
+    env_file:
+      - .env
+    environment:
+      - CONTAINER_NAME=TRAINING
+
+  front:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.front
+    container_name: front_container
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      - api
+    env_file:
+      - .env
+    environment:
+      - CONTAINER_NAME=FRONT
+    networks:
+      - ml-network
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    container_name: api_container
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./models:/app/models
+      - ./logs:/app/logs
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - CONTAINER_NAME=API
+    networks:
+      - ml-network
+
+networks:
+  ml-network:
+    driver: bridge
