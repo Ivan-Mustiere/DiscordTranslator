@@ -10,4 +10,4 @@ Un bot Discord pour traduire automatiquement les messages dans différents salon
 ## Installation
 1. Clonez le dépôt.
 2. Installez les dépendances : `pip install -r requirements.txt`
-3. Ajoutez votre `DISCORD_TOKEN` dans un fichier `.env`.
+3. Ajoutez votre `DISCORD_TOKEN` dans un fichier `.env`.# DiscordTranslator
