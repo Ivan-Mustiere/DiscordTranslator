@@ -5,11 +5,10 @@ resources:
   - ../../base
   - namespace.yaml
 
-namespace: discord-translator-prod
+namespace: discord-translator-preprod
 
 commonLabels:
-  environment: prod
+  environment: preprod
 
 patchesStrategicMerge:
-  - replicas.yaml
-  - images.yaml
+  - patches.yaml

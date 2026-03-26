@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: rundeck-data-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rundeck
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rundeck
+  template:
+    metadata:
+      labels:
+        app: rundeck
+    spec:
+      containers:
+        - name: rundeck
+          image: rundeck/rundeck:5.5.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 4440
+          env:
+            - name: RUNDECK_GRAILS_URL
+              value: "http://rundeck:4440"
+            - name: RUNDECK_SERVER_FORWARDED
+              value: "true"
+            - name: RUNDECK_ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: rundeck-auth
+                  key: RUNDECK_ADMIN_USERNAME
+            - name: RUNDECK_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rundeck-auth
+                  key: RUNDECK_ADMIN_PASSWORD
+          volumeMounts:
+            - name: rundeck-data
+              mountPath: /home/rundeck/server/data
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+      volumes:
+        - name: rundeck-data
+          persistentVolumeClaim:
+            claimName: rundeck-data-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rundeck
+spec:
+  selector:
+    app: rundeck
+  ports:
+    - name: http
+      port: 4440
+      targetPort: 4440
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rundeck-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: rundeck.dev.discordtranslator.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: rundeck
+                port:
+                  number: 4440
