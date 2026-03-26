@@ -9,5 +9,6 @@ resources:
   - asr-engine.yaml
   - spark-processor.yaml
   - rundeck.yaml
+  - rundeck-rbac.yaml
   - ingress.yaml
   - hpa.yaml

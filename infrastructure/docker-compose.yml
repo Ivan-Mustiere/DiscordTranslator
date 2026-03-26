@@ -1,3 +1,5 @@
+# Legacy local compose definition.
+# Source of truth for deployments is Kubernetes manifests in infrastructure/k8s.
 services:
   ingest:
     build:

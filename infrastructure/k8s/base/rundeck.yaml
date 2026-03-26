@@ -23,6 +23,7 @@ spec:
       labels:
         app: rundeck
     spec:
+      serviceAccountName: rundeck-sa
       containers:
         - name: rundeck
           image: rundeck/rundeck:5.5.0
