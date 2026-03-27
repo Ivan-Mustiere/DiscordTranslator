@@ -1,33 +1,20 @@
 using System;
-using System.Net.Http;
-using System.Threading.Tasks;
+using System.Windows.Forms;
+using src.ui;  // Namespace où est MainForm
 
-class Program
+namespace src
 {
-    static async Task Main(string[] args)
+    static class Program
     {
-        string apiUrl = "https://api.monsite.com/users"; // ton endpoint API
-
-        using (HttpClient client = new HttpClient())
+        [STAThread]
+        static void Main()
         {
-            try
-            {
-                // Appel GET
-                HttpResponseMessage response = await client.GetAsync(apiUrl);
-                response.EnsureSuccessStatusCode();
+            Application.SetHighDpiMode(HighDpiMode.SystemAware);
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
 
-                // Lire la réponse
-                string responseBody = await response.Content.ReadAsStringAsync();
-                Console.WriteLine("Réponse de l'API :");
-                Console.WriteLine(responseBody);
-            }
-            catch (HttpRequestException e)
-            {
-                Console.WriteLine("Erreur lors de l'appel API : " + e.Message);
-            }
+            // On lance la fenêtre principale MainForm
+            Application.Run(new MainForm());
         }
-
-        Console.WriteLine("\nAppuyez sur une touche pour quitter...");
-        Console.ReadKey();
     }
 }

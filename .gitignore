@@ -10,6 +10,13 @@ __pycache__/
 .DS_Store
 *.swp
 
+# Data
+bin/
+data/
+logs/
+models/
+samples/
+
 # Env
 .env
 .env.aws
