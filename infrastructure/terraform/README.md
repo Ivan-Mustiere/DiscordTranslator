@@ -6,7 +6,7 @@ This folder provisions a pragmatic AWS foundation for the project:
 - EKS cluster with managed node group
 - S3 buckets for data, models, and logs
 - RDS PostgreSQL in private subnets with automated backups
-- Dedicated Debian EC2 VM for Grafana monitoring
+- Dedicated Debian EC2 VM for Grafana + Prometheus monitoring
 
 ## Files
 
@@ -66,6 +66,7 @@ terraform apply -var-file=preprod.tfvars
 - Restrict `monitoring_allowed_cidrs` to trusted office/VPN ranges.
 - Set `monitoring_ssh_allowed_cidrs` and `monitoring_key_name` if SSH access is needed.
 - Set a strong `grafana_admin_password` in your real `*.tfvars` file (never commit secrets).
-- Optional datasource can be set through `monitoring_prometheus_url`.
+- Grafana auto-provisions a Prometheus datasource (defaults to the local Prometheus container).
+- Optional datasource override can be set through `monitoring_prometheus_url`.
 - If `monitoring_backup_s3_bucket` is set, the VM gets IAM write access and sends Grafana backups to S3 on `monitoring_backup_cron`.
 - Bootstrap script used by Terraform is located in `monitoring/debian/bootstrap.sh.tftpl`.

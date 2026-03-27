@@ -18,13 +18,51 @@ systemctl enable docker
 systemctl start docker
 
 mkdir -p /opt/monitoring/grafana-data
+mkdir -p /opt/monitoring/prometheus
+mkdir -p /opt/monitoring/prometheus-data
 mkdir -p /opt/monitoring/provisioning/datasources
+
+cat > /opt/monitoring/prometheus/prometheus.yml <<'EOF_PROM'
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: node
+    static_configs:
+      - targets: ['node-exporter:9100']
+EOF_PROM
 
 cat > /opt/monitoring/docker-compose.yml <<'EOF_COMPOSE'
 services:
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    restart: unless-stopped
+    volumes:
+      - /opt/monitoring/prometheus:/etc/prometheus
+      - /opt/monitoring/prometheus-data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+      - --path.rootfs=/rootfs
+
   grafana:
     image: grafana/grafana:11.1.4
     restart: unless-stopped
+    depends_on:
+      - prometheus
     ports:
       - "3000:3000"
     environment:
@@ -35,17 +73,20 @@ services:
       - /opt/monitoring/provisioning:/etc/grafana/provisioning
 EOF_COMPOSE
 
+prometheus_datasource_url="http://prometheus:9090"
 if [ -n "${prometheus_url}" ]; then
-  cat > /opt/monitoring/provisioning/datasources/datasource.yml <<EOF_DS
+  prometheus_datasource_url="${prometheus_url}"
+fi
+
+cat > /opt/monitoring/provisioning/datasources/datasource.yml <<EOF_DS
 apiVersion: 1
 datasources:
   - name: Prometheus
     type: prometheus
     access: proxy
-    url: ${prometheus_url}
+    url: ${prometheus_datasource_url}
     isDefault: true
 EOF_DS
-fi
 
 docker compose -f /opt/monitoring/docker-compose.yml up -d
 

@@ -5,7 +5,9 @@ This folder contains bootstrap/configuration assets used to run monitoring on a 
 ## Current scope
 
 - Grafana runs in Docker on the Debian VM.
-- Optional Prometheus datasource can be auto-provisioned.
+- Prometheus runs in Docker on the Debian VM (internal target).
+- `node-exporter` runs in Docker on the same VM to expose host metrics.
+- Grafana auto-provisions a Prometheus datasource (defaults to the local Prometheus container).
 - Grafana data is backed up to S3 on a cron schedule (if configured).
 
 ## Files
@@ -19,6 +21,6 @@ This folder contains bootstrap/configuration assets used to run monitoring on a 
 
 ## Optional Terraform variables
 
-- `monitoring_prometheus_url`
+- `monitoring_prometheus_url` (optional override for the Grafana Prometheus datasource URL)
 - `monitoring_backup_s3_bucket`
 - `monitoring_backup_cron`

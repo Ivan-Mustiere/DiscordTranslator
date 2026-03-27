@@ -201,7 +201,7 @@ variable "grafana_admin_password" {
 }
 
 variable "monitoring_prometheus_url" {
-  description = "Optional Prometheus URL configured as Grafana datasource."
+  description = "Optional Prometheus URL override for the Grafana datasource (defaults to the local Prometheus container)."
   type        = string
   default     = ""
 }
