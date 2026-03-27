@@ -15,8 +15,11 @@ namespace src.ui
             Width = 400;
             Height = 300;
 
+            // Taille minimale
+            MinimumSize = new Size(300, 200);  // Largeur 300px, Hauteur 200px
+
             // Définir l'icône (logo.ico doit être dans le dossier bin ou inclus dans le projet)
-            Icon = new Icon("logo.ico");
+            Icon = new Icon("ui/resources/logo.ico");
 
             // Création du bouton
             testButton = new Button();
