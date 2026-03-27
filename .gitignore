@@ -4,20 +4,11 @@ __pycache__/
 *.pyo
 *.pyd
 
-# Data
-data/raw/
-data/processed/
-data/models/
-logs/
-
 # IDE / OS
 .vscode/
 .idea/
 .DS_Store
 *.swp
-
-# ML
-models/
 
 # Env
 .env
