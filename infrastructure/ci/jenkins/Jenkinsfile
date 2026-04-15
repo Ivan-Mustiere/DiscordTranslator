@@ -1,0 +1,106 @@
+pipeline {
+  agent any
+
+  parameters {
+    choice(name: 'TARGET_ENV', choices: ['dev', 'preprod', 'prod'], description: 'Deployment environment')
+    string(name: 'IMAGE_TAG', defaultValue: '', description: 'Optional image tag override')
+    booleanParam(name: 'PUSH_IMAGES', defaultValue: true, description: 'Push images to registry')
+    booleanParam(name: 'UPDATE_MANIFESTS', defaultValue: true, description: 'Update k8s overlays and push commit')
+  }
+
+  environment {
+    REGISTRY = 'ghcr.io/imustiere'
+    SERVICES = 'fastapi-gateway bot-discord asr-engine spark-processor kafka-broker'
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Prepare') {
+      steps {
+        script {
+          env.TAG = params.IMAGE_TAG?.trim() ? params.IMAGE_TAG.trim() : "${params.TARGET_ENV}-${env.BUILD_NUMBER}"
+          env.OVERLAY_FILE = params.TARGET_ENV == 'prod' ?
+            'infrastructure/k8s/overlays/prod/images.yaml' :
+            "infrastructure/k8s/overlays/${params.TARGET_ENV}/patches.yaml"
+        }
+      }
+    }
+
+    stage('Validate Tooling') {
+      steps {
+        sh '''
+          set -e
+          command -v docker >/dev/null
+          command -v git >/dev/null
+          command -v bash >/dev/null
+        '''
+      }
+    }
+
+    stage('Prod Approval') {
+      when { expression { return params.TARGET_ENV == 'prod' } }
+      steps {
+        timeout(time: 30, unit: 'MINUTES') {
+          input message: "Approve deployment to PROD with tag ${env.TAG}?"
+        }
+      }
+    }
+
+    stage('Build Images') {
+      steps {
+        sh '''
+          bash cicd/jenkins/scripts/build-images.sh "${REGISTRY}" "${TAG}" "${SERVICES}"
+        '''
+      }
+    }
+
+    stage('Push Images') {
+      when { expression { return params.PUSH_IMAGES } }
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'ghcr-creds', usernameVariable: 'GHCR_USER', passwordVariable: 'GHCR_TOKEN')]) {
+          sh '''
+            bash cicd/jenkins/scripts/push-to-ecr.sh "${REGISTRY}" "${TAG}" "${SERVICES}" "${GHCR_USER}" "${GHCR_TOKEN}"
+          '''
+        }
+      }
+    }
+
+    stage('Update Manifests') {
+      when { expression { return params.UPDATE_MANIFESTS } }
+      steps {
+        sh '''
+          bash cicd/jenkins/scripts/update-manifests.sh "${OVERLAY_FILE}" "${TAG}" "${SERVICES}"
+        '''
+      }
+    }
+
+    stage('Commit and Push') {
+      when { expression { return params.UPDATE_MANIFESTS } }
+      steps {
+        sh '''
+          set -e
+          git add ${OVERLAY_FILE}
+          if git diff --staged --quiet; then
+            echo "No manifest changes to commit."
+            exit 0
+          fi
+          GIT_AUTHOR_NAME="jenkins" GIT_AUTHOR_EMAIL="jenkins@local" \
+          GIT_COMMITTER_NAME="jenkins" GIT_COMMITTER_EMAIL="jenkins@local" \
+          git commit -m "cicd: promote ${TARGET_ENV} images to ${TAG}"
+          git push origin HEAD
+        '''
+      }
+    }
+  }
+
+  post {
+    always {
+      archiveArtifacts artifacts: 'cicd/jenkins/templates/*', allowEmptyArchive: true
+    }
+  }
+}

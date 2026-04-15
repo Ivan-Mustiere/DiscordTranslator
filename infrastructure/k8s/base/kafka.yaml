@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: kafka-data-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-broker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-broker
+  template:
+    metadata:
+      labels:
+        app: kafka-broker
+    spec:
+      containers:
+        - name: kafka-broker
+          image: ghcr.io/imustiere/discordtranslator-kafka-broker:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9092
+              name: kafka
+          envFrom:
+            - configMapRef:
+                name: app-config
+          volumeMounts:
+            - name: kafka-data
+              mountPath: /var/lib/kafka/data
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+      volumes:
+        - name: kafka-data
+          persistentVolumeClaim:
+            claimName: kafka-data-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-broker
+spec:
+  selector:
+    app: kafka-broker
+  ports:
+    - name: kafka
+      port: 9092
+      targetPort: 9092
+  type: ClusterIP

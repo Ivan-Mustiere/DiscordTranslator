@@ -1,0 +1,3 @@
+{
+  "text": "*DiscordTranslator CI/CD*\\n- Job: ${JOB_NAME}\\n- Build: #${BUILD_NUMBER}\\n- Env: ${TARGET_ENV}\\n- Tag: ${TAG}\\n- Result: ${BUILD_RESULT}\\n- URL: ${BUILD_URL}"
+}

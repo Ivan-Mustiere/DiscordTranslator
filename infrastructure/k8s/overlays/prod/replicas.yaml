@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-gateway
+spec:
+  replicas: 3
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: asr-engine
+spec:
+  replicas: 2
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: fastapi-gateway-hpa
+spec:
+  minReplicas: 3
+  maxReplicas: 10
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fastapi-gateway-ingress
+spec:
+  rules:
+    - host: api.discordtranslator.com
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  ENVIRONMENT: "prod"
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rundeck-ingress
+spec:
+  rules:
+    - host: rundeck.discordtranslator.com

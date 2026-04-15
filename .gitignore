@@ -1,12 +1,22 @@
-# Secrets
-.env
-token.txt
-
 # Python
 __pycache__/
 *.py[cod]
-venv/
-.venv/
+*.pyo
+*.pyd
 
-# Environnement Node (si vous utilisez JS)
-node_modules/
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# Data
+bin/
+data/
+logs/
+models/
+samples/
+
+# Env
+.env
+.env.aws

@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-gateway
+spec:
+  replicas: 2
+  template:
+    spec:
+      containers:
+        - name: fastapi-gateway
+          image: ghcr.io/imustiere/discordtranslator-fastapi-gateway:preprod
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bot-discord
+spec:
+  template:
+    spec:
+      containers:
+        - name: bot-discord
+          image: ghcr.io/imustiere/discordtranslator-bot-discord:preprod
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: asr-engine
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: asr-engine
+          image: ghcr.io/imustiere/discordtranslator-asr-engine:preprod
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-processor
+spec:
+  template:
+    spec:
+      containers:
+        - name: spark-processor
+          image: ghcr.io/imustiere/discordtranslator-spark-processor:preprod
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-broker
+spec:
+  template:
+    spec:
+      containers:
+        - name: kafka-broker
+          image: ghcr.io/imustiere/discordtranslator-kafka-broker:preprod
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: fastapi-gateway-hpa
+spec:
+  minReplicas: 2
+  maxReplicas: 6
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fastapi-gateway-ingress
+spec:
+  rules:
+    - host: api.preprod.discordtranslator.com
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  ENVIRONMENT: "preprod"
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rundeck-ingress
+spec:
+  rules:
+    - host: rundeck.preprod.discordtranslator.com

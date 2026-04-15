@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-processor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spark-processor
+  template:
+    metadata:
+      labels:
+        app: spark-processor
+    spec:
+      containers:
+        - name: spark-processor
+          image: ghcr.io/imustiere/discordtranslator-spark-processor:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 7077
+              name: spark
+          envFrom:
+            - configMapRef:
+                name: app-config
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spark-processor
+spec:
+  selector:
+    app: spark-processor
+  ports:
+    - name: spark
+      port: 7077
+      targetPort: 7077
+  type: ClusterIP

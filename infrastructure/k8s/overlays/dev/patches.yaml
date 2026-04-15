@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-gateway
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: fastapi-gateway
+          image: ghcr.io/imustiere/discordtranslator-fastapi-gateway:dev
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bot-discord
+spec:
+  template:
+    spec:
+      containers:
+        - name: bot-discord
+          image: ghcr.io/imustiere/discordtranslator-bot-discord:dev
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: asr-engine
+spec:
+  template:
+    spec:
+      containers:
+        - name: asr-engine
+          image: ghcr.io/imustiere/discordtranslator-asr-engine:dev
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-processor
+spec:
+  template:
+    spec:
+      containers:
+        - name: spark-processor
+          image: ghcr.io/imustiere/discordtranslator-spark-processor:dev
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-broker
+spec:
+  template:
+    spec:
+      containers:
+        - name: kafka-broker
+          image: ghcr.io/imustiere/discordtranslator-kafka-broker:dev
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fastapi-gateway-ingress
+spec:
+  rules:
+    - host: api.dev.discordtranslator.local
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  ENVIRONMENT: "dev"
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rundeck-ingress
+spec:
+  rules:
+    - host: rundeck.dev.discordtranslator.local

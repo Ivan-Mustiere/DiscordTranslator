@@ -1,0 +1,50 @@
+project_name = "discordtranslator"
+environment  = "dev"
+aws_region   = "eu-west-3"
+
+eks_cluster_version       = "1.30"
+node_group_instance_types = ["t3.medium"]
+node_group_min_size       = 1
+node_group_max_size       = 3
+node_group_desired_size   = 2
+
+vpc_cidr             = "10.0.0.0/16"
+public_subnet_cidrs  = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+private_subnet_cidrs = ["10.0.11.0/24", "10.0.12.0/24", "10.0.13.0/24"]
+
+s3_buckets = {
+  raw       = "discordtranslator-dev-raw"
+  processed = "discordtranslator-dev-processed"
+  models    = "discordtranslator-dev-models"
+  logs      = "discordtranslator-dev-logs"
+}
+
+additional_tags = {
+  Owner = "team-mlops"
+}
+
+db_name                      = "discordtranslator"
+db_username                  = "app_admin"
+db_password                  = "CHANGE_ME_STRONG_PASSWORD"
+db_instance_class            = "db.t4g.medium"
+db_allocated_storage         = 20
+db_max_allocated_storage     = 100
+db_engine_version            = "16.3"
+db_multi_az                  = false
+db_backup_retention_period   = 7
+db_backup_window             = "03:00-04:00"
+db_maintenance_window        = "sun:04:00-sun:05:00"
+db_deletion_protection       = true
+db_skip_final_snapshot       = false
+
+monitoring_enabled           = true
+monitoring_instance_type     = "t3.small"
+monitoring_root_volume_size  = 30
+monitoring_allowed_cidrs     = ["0.0.0.0/0"]
+monitoring_ssh_allowed_cidrs = []
+monitoring_key_name          = null
+grafana_admin_user           = "admin"
+grafana_admin_password       = "CHANGE_ME_GRAFANA_PASSWORD"
+monitoring_prometheus_url    = ""
+monitoring_backup_s3_bucket  = "discordtranslator-dev-monitoring-backups"
+monitoring_backup_cron       = "0 2 * * *"
